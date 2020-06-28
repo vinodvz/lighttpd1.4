@@ -223,7 +223,7 @@ URIHANDLER_FUNC(mod_usertrack_uri_handler) {
 	li_MD5_Update(&Md5Ctx, (unsigned char *)"+", 1);
 
 	/* we assume sizeof(time_t) == 4 here, but if not it ain't a problem at all */
-	LI_ltostr(hh, srv->cur_ts);
+	LI_ltostr(hh, time(NULL));
 	li_MD5_Update(&Md5Ctx, (unsigned char *)hh, strlen(hh));
 	li_MD5_Update(&Md5Ctx, (unsigned char *)srv->entropy, sizeof(srv->entropy));
 	LI_ltostr(hh, rand());

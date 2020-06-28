@@ -706,6 +706,7 @@ REQUESTDONE_FUNC(log_access_write) {
 
 				/* cache the generated timestamp */
 				if (srv->cur_ts != *(p->conf.last_generated_accesslog_ts_ptr)) {
+					time_t cur_time = time(NULL);
 					struct tm tm;
 #if defined(HAVE_STRUCT_TM_GMTOFF)
 					long scd, hrs, min;
@@ -714,10 +715,10 @@ REQUESTDONE_FUNC(log_access_write) {
 					buffer_prepare_copy(p->conf.ts_accesslog_str, 255);
 #if defined(HAVE_STRUCT_TM_GMTOFF)
 # ifdef HAVE_LOCALTIME_R
-					localtime_r(&(srv->cur_ts), &tm);
+					localtime_r(&cur_time, &tm);
 					strftime(p->conf.ts_accesslog_str->ptr, p->conf.ts_accesslog_str->size - 1, p->conf.ts_accesslog_fmt_str->ptr, &tm);
 # else /* HAVE_LOCALTIME_R */
-					strftime(p->conf.ts_accesslog_str->ptr, p->conf.ts_accesslog_str->size - 1, p->conf.ts_accesslog_fmt_str->ptr, localtime_r(&(srv->cur_ts)));
+					strftime(p->conf.ts_accesslog_str->ptr, p->conf.ts_accesslog_str->size - 1, p->conf.ts_accesslog_fmt_str->ptr, localtime_r(&cur_time));
 # endif /* HAVE_LOCALTIME_R */
 					p->conf.ts_accesslog_str->used = strlen(p->conf.ts_accesslog_str->ptr) + 1;
 
@@ -738,10 +739,10 @@ REQUESTDONE_FUNC(log_access_write) {
 					}
 #else /* HAVE_STRUCT_TM_GMTOFF */
 # ifdef HAVE_GMTIME_R
-					gmtime_r(&(srv->cur_ts), &tm);
+					gmtime_r(&cur_time, &tm);
 					strftime(p->conf.ts_accesslog_str->ptr, p->conf.ts_accesslog_str->size - 1, p->conf.ts_accesslog_fmt_str->ptr, &tm);
 # else /* HAVE_GMTIME_R */
-					strftime(p->conf.ts_accesslog_str->ptr, p->conf.ts_accesslog_str->size - 1, p->conf.ts_accesslog_fmt_str->ptr, gmtime(&(srv->cur_ts)));
+					strftime(p->conf.ts_accesslog_str->ptr, p->conf.ts_accesslog_str->size - 1, p->conf.ts_accesslog_fmt_str->ptr, gmtime(&cur_time));
 # endif /* HAVE_GMTIME_R */
 					p->conf.ts_accesslog_str->used = strlen(p->conf.ts_accesslog_str->ptr) + 1;
 #endif /* HAVE_STRUCT_TM_GMTOFF */

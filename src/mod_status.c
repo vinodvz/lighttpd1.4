@@ -343,7 +343,7 @@ static handler_t mod_status_handle_server_status_html(server *srv, connection *c
 	buffer_append_string_len(b, CONST_STR_LEN("</td></tr>\n"));
 	buffer_append_string_len(b, CONST_STR_LEN("<tr><td>Started at</td><td class=\"string\">"));
 
-	ts = srv->startup_ts;
+	ts = time(NULL) - srv->cur_ts + srv->startup_ts;	//Startup time from wall clock
 
 	strftime(buf, sizeof(buf) - 1, "%Y-%m-%d %H:%M:%S", localtime(&ts));
 	buffer_append_string(b, buf);

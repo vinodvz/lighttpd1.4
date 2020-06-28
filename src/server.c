@@ -226,7 +226,7 @@ static server *server_init(void) {
 	}
 	if (frandom) fclose(frandom);
 
-	srv->cur_ts = time(NULL);
+	srv->cur_ts = steady_time(NULL);
 	srv->startup_ts = srv->cur_ts;
 
 	srv->conns = calloc(1, sizeof(*srv->conns));
@@ -353,6 +353,18 @@ static void server_free(server *srv) {
 #endif
 
 	free(srv);
+}
+
+time_t steady_time(time_t *t) {
+    struct timespec tp;
+
+    if (clock_gettime(CLOCK_MONOTONIC,&tp) != 0) {
+        clock_gettime(CLOCK_MONOTONIC_RAW,&tp);
+    }
+    if (t != NULL) {
+        *t = tp.tv_sec;
+    }
+    return tp.tv_sec;
 }
 
 static void show_version (void) {
@@ -1260,7 +1272,7 @@ int main (int argc, char **argv) {
 #endif
 
 			/* get current time */
-			min_ts = time(NULL);
+			min_ts = steady_time(NULL);
 
 			if (min_ts != srv->cur_ts) {
 				int cs = 0;

@@ -287,12 +287,14 @@ URIHANDLER_FUNC(mod_expire_path_handler) {
 	plugin_data *p = p_d;
 	int s_len;
 	size_t k;
+	time_t cur_time;
 
 	if (con->uri.path->used == 0) return HANDLER_GO_ON;
 
 	mod_expire_patch_connection(srv, con, p);
 
 	s_len = con->uri.path->used - 1;
+	cur_time = time(NULL);
 
 	for (k = 0; k < p->conf.expire_url->used; k++) {
 		data_string *ds = (data_string *)p->conf.expire_url->data[k];
@@ -312,7 +314,7 @@ URIHANDLER_FUNC(mod_expire_path_handler) {
 			switch(mod_expire_get_offset(srv, p, ds->value, &ts)) {
 			case 0:
 				/* access */
-				expires = (ts + srv->cur_ts);
+				expires = (ts + cur_time);
 				break;
 			case 1:
 				/* modification */
@@ -329,8 +331,8 @@ URIHANDLER_FUNC(mod_expire_path_handler) {
 				return HANDLER_ERROR;
 			}
 
-			/* expires should be at least srv->cur_ts */
-			if (expires < srv->cur_ts) expires = srv->cur_ts;
+			/* expires should be at least cur_time */
+			if (expires < cur_time) expires = cur_time;
 
 			if (0 == (len = strftime(p->expire_tstmp->ptr, p->expire_tstmp->size - 1,
 					   "%a, %d %b %Y %H:%M:%S GMT", gmtime(&(expires))))) {
@@ -346,7 +348,7 @@ URIHANDLER_FUNC(mod_expire_path_handler) {
 
 			/* HTTP/1.1 */
 			buffer_copy_string_len(p->expire_tstmp, CONST_STR_LEN("max-age="));
-			buffer_append_long(p->expire_tstmp, expires - srv->cur_ts); /* as expires >= srv->cur_ts the difference is >= 0 */
+			buffer_append_long(p->expire_tstmp, expires - cur_time); /* as expires >= cur_time the difference is >= 0 */
 
 			response_header_append(srv, con, CONST_STR_LEN("Cache-Control"), CONST_BUF_LEN(p->expire_tstmp));
 
